@@ -1,32 +1,33 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const db_1 = __importDefault(require("./db")); // Correct relative path since both db.ts and index.ts are in the same src folder
-const app = (0, express_1.default)();
+const express = require("express");
+const { Pool } = require("pg");
+const cors = require("cors");
+
+const app = express();
 const port = process.env.PORT || 3000;
-// Example route to fetch games from the database
-app.get("/api/games", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+
+app.use(cors()); // Allow cross-origin requests
+app.use(express.json());
+
+// PostgreSQL Connection
+const pool = new Pool({
+    connectionString: "postgresql://db_2024_games_rqin_user:aumEY7dPBSm8TYoJpPyXBMIZjVLjTGre@dpg-cuv297t2ng1s73ft4ad0-a.ohio-postgres.render.com/db_2024_games_rqin",
+    ssl: {
+        rejectUnauthorized: false,
+    }
+});
+
+// API Route to Fetch Game Data
+app.get("/api/game-data", async (req, res) => {
     try {
-        const result = yield db_1.default.query("SELECT * FROM games"); // Query the database
-        res.json(result.rows); // Send the data as JSON
+        const result = await pool.query("SELECT * FROM games"); // Change "games" to your table name
+        res.json(result.rows);  // Return data as JSON array
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Database error");
     }
-    catch (err) {
-        console.error("Error querying database:", err);
-        res.status(500).send("Internal Server Error");
-    }
-}));
+});
+
+// Start Server
 app.listen(port, () => {
-    console.log(`API is running on port ${port}`);
+    console.log(`Server running on port ${port}`);
 });
