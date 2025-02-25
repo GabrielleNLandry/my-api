@@ -17,7 +17,7 @@ const pool = new Pool({
 });
 
 // API Route to Fetch Game Data
-app.get("/api/game-data", async (req, res) => {
+app.get("/api/games", async (req, res) => {
     try {
         const result = await pool.query("SELECT * FROM games"); // Change "games" to your table name
         res.json(result.rows);  // Return data as JSON array
